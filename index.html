@@ -2,74 +2,102 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>EXP‑Station · Vollachse · EXPANDER</title>
+<title>RESPO · EXP · Station</title>
 
 <style>
 body { background:#000; color:#0f0; font-family:monospace; padding:40px; }
 h1 { color:#6cf; margin-bottom:20px; }
 .section { background:#111; border:1px solid #333; padding:20px; margin-bottom:25px; }
-.title { color:#6cf; font-size:20px; margin-bottom:10px; }
+.title { color:#6cf; font-size:18px; margin-bottom:10px; }
 pre { background:#000; border-left:3px solid #6cf; padding:10px; white-space:pre-wrap; }
 </style>
 </head>
 
 <body>
 
-<h1>EXP‑Station · Vollachse · EXPANDER</h1>
+<h1>RESPO · EXP · Station</h1>
 
 <div id="output"></div>
 
 <script type="module">
 
-import { EXP_AXIS } from "./EXP‑Achse.vector";
-import { STATION_EXP } from "./EXP‑Station.vector";
-import { PIPELINE_EXP } from "./EXP‑Pipeline";
-import { VectorEXP } from "./EXP‑Vector.vector";
+import { VectorTranslate } from "./row.id.js";
+import { RESPO_STATION_MASTER } from "./Station.vector.js";
+import { VectorEXP } from "./EXP-Vector.vector";
+
+async function loadCSV(path) {
+    const text = await fetch(path).then(r => r.text());
+    const lines = text.trim().split("\n");
+    const header = lines[0].split(";");
+    return lines.slice(1).map(line => {
+        const cols = line.split(";");
+        const obj = {};
+        header.forEach((h, i) => obj[h] = cols[i]);
+        return obj;
+    });
+}
 
 async function run() {
 
-    const vector = {
-        id: "EXP",
-        axis: EXP_AXIS,
-        evo: 360,
-        geo: 360,
-        radar: 360
-    };
+    const rows = await loadCSV("./12.csv");
 
-    const exp = VectorEXP(vector);
+    let html = "";
 
-    const html = `
+    rows.forEach(row => {
+
+        const vector = VectorTranslate(row);
+        const station = RESPO_STATION_MASTER(vector);
+        const exp = VectorEXP(vector);
+
+        html += `
         <div class="section">
-            <div class="title">EXP‑Vector · EXPANDER</div>
+            <div class="title">ID ${vector.id}</div>
             <pre>
+
 Achse:
-  x: ${exp.axis.x}
-  y: ${exp.axis.y}
-  z: ${exp.axis.z}
-  rot: ${exp.axis.rot}
+  x: ${vector.axis.x}
+  y: ${vector.axis.y}
+  z: ${vector.axis.z}
+  rot: ${vector.axis.rot}
   full: ${exp.axis.full}
 
 Station:
-  Name: ${STATION_EXP.name}
-  Typ: ${STATION_EXP.type}
-  Modus: ${STATION_EXP.mode}
-  Zustand: ${STATION_EXP.state}
-  Real: ${STATION_EXP.real}
+  name: EXP
+  state: ${vector.station.state}
+  real: ${vector.station.real}
+
+GEO:
+  state: ${station.geo.position}
+  sweep: ${station.geo.sweep}
+
+Radar:
+  state: ${station.radar.radar}
+  sweep: ${station.radar.sweep}
+
+EVO:
+  raw: ${station.evo.raw}
+  value: ${station.evo.evo}
+
+EXP:
+  status: ${exp.status}
+  evo: ${exp.evo}
+  geo: ${exp.geo}
+  radar: ${exp.radar}
 
 Pipeline:
-  3: ${PIPELINE_EXP[3]}
-  6: ${PIPELINE_EXP[6]}
-  ∞: ${PIPELINE_EXP.infinity}
+  3: Zustand
+  6: Overdrive
+  EXP: offen
 
-EXP‑Vector:
-  ID: ${exp.id}
-  EVO: ${exp.evo}°
-  GEO: ${exp.geo}
-  Radar: ${exp.radar}
-  Status: ${exp.status}
+ID:
+  type: Vollachse
+  form: RAW
+  status: Online
+
             </pre>
         </div>
-    `;
+        `;
+    });
 
     document.getElementById("output").innerHTML = html;
 }
