@@ -1,0 +1,7 @@
+export const STATION_EXP = {
+    name: "EXP",
+    type: "Vollachse",
+    mode: "Erweiterung",
+    state: "aktiv",
+    real: "gesetzt"
+};
