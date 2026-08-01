@@ -1,0 +1,10 @@
+export function VectorEXP(vector) {
+    return {
+        id: vector.id + ".EXP",
+        axis: expAxis,
+        evo: vector.evo * 2,
+        geo: vector.geo === 360 ? 720 : vector.geo,
+        radar: vector.radar === 360 ? 720 : vector.radar,
+        status: "EXPANDER-AKTIV"
+    };
+}
