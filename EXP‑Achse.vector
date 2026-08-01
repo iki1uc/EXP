@@ -1,0 +1,7 @@
+expAxis = {
+    x: vector.axis.x,
+    y: vector.axis.y,
+    z: vector.axis.z,
+    rot: vector.axis.rot,
+    full: vector.axis.x + vector.axis.y + vector.axis.z + vector.axis.rot
+};
