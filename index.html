@@ -2,122 +2,80 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>ANKER – S01 · iki1uc</title>
+<title>EXP‑Station · Vollachse · EXPANDER</title>
 
 <style>
 body { background:#000; color:#0f0; font-family:monospace; padding:40px; }
-h1 { color:#0f0; letter-spacing:4px; margin-bottom:30px; }
-.block { background:#111; border:1px solid #333; padding:25px; margin-bottom:30px; border-radius:8px; }
-.title { font-size:22px; color:#6cf; margin-bottom:10px; }
-pre { background:#000; border-left:3px solid #6cf; padding:15px; margin-top:10px; white-space:pre-wrap; }
-a { color:#6cf; text-decoration:none; font-weight:bold; }
+h1 { color:#6cf; margin-bottom:20px; }
+.section { background:#111; border:1px solid #333; padding:20px; margin-bottom:25px; }
+.title { color:#6cf; font-size:20px; margin-bottom:10px; }
+pre { background:#000; border-left:3px solid #6cf; padding:10px; white-space:pre-wrap; }
 </style>
-
-<!-- SYSTEM CORE MODULES -->
-<script src="../HH/cr/RESPO.core.js"></script>
-<script src="../HH/cr/AXI.core.js"></script>
-<script src="../HH/cr/TEM.core.js"></script>
-<script src="../HH/cr/RUN8.core.js"></script>
-
-<!-- ID MODULES -->
-<script src="IDkoop.js"></script>
-<script src="IDneutral.js"></script>
-<script src="IDpook.js"></script>
-
 </head>
 
 <body>
 
-<h1>ANKER – S01 · iki1uc</h1>
+<h1>EXP‑Station · Vollachse · EXPANDER</h1>
 
-<!-- ACHSEN STATUS -->
-<div class="block">
-    <div class="title">Stabilisationsachse</div>
-    <p id="axis-status">Lade Achsen…</p>
-</div>
+<div id="output"></div>
 
-<!-- IDENTITÄT -->
-<div class="block">
-    <div class="title">Identität</div>
-    <p>
-        <a href="id.html">→ ANKER‑Identität öffnen</a>
-    </p>
-    <pre id="id-status"></pre>
-</div>
+<script type="module">
 
-<!-- ACHSEN LISTE -->
-<div class="block">
-    <div class="title">Stabilisierte Achsen</div>
-    <pre id="axis-list"></pre>
-</div>
+import { EXP_AXIS } from "./EXP‑Achse.vector";
+import { STATION_EXP } from "./EXP‑Station.vector";
+import { PIPELINE_EXP } from "./EXP‑Pipeline";
+import { VectorEXP } from "./EXP‑Vector.vector";
 
-<!-- RESPO STATUS -->
-<div class="block">
-    <div class="title">RESPO‑Status</div>
-    <pre id="respo-status"></pre>
-</div>
+async function run() {
 
-<!-- SYSTEM STATUS -->
-<div class="block">
-    <div class="title">System‑Status</div>
-    <pre id="system-status"></pre>
-</div>
-
-<script>
-(async function () {
-
-    /* -------------------------------
-       ANKER DATEN LADEN
-    --------------------------------*/
-    const anker = await fetch("ANKER.json").then(r => r.json()).catch(() => null);
-    const raw = await fetch("ANKER.raw").then(r => r.text()).catch(() => "");
-
-    document.getElementById("axis-list").innerText = raw || "Keine Achsen gefunden";
-
-
-    /* -------------------------------
-       AXI ENGINE
-    --------------------------------*/
-    const axi = AXI_CORE();
-    document.getElementById("axis-status").innerText =
-        axi ? "Achsen stabil" : "Achsenfehler";
-
-
-    /* -------------------------------
-       RESPO ENGINE
-    --------------------------------*/
-    const respo = RESPO_CORE(anker || {});
-    document.getElementById("respo-status").innerText =
-        `Score: ${respo.score}\nStatus: ${respo.ok ? "STABIL" : "KRITISCH"}`;
-
-
-    /* -------------------------------
-       ID MODUS ERKENNEN
-    --------------------------------*/
-    let idMode = "neutral";
-    if (ID_KOOP?.active) idMode = "koop";
-    if (ID_POOK?.active) idMode = "pook";
-
-    const idMap = {
-        koop: ID_KOOP,
-        neutral: ID_NEUTRAL,
-        pook: ID_POOK
+    const vector = {
+        id: "EXP",
+        axis: EXP_AXIS,
+        evo: 360,
+        geo: 360,
+        radar: 360
     };
 
-    document.getElementById("id-status").innerText =
-        `Modus: ${idMode.toUpperCase()}\nInfo: ${idMap[idMode].info()}`;
+    const exp = VectorEXP(vector);
 
+    const html = `
+        <div class="section">
+            <div class="title">EXP‑Vector · EXPANDER</div>
+            <pre>
+Achse:
+  x: ${exp.axis.x}
+  y: ${exp.axis.y}
+  z: ${exp.axis.z}
+  rot: ${exp.axis.rot}
+  full: ${exp.axis.full}
 
-    /* -------------------------------
-       SYSTEM STATUS
-    --------------------------------*/
-    const tem = TEM_CORE();
-    const run8 = RUN8();
+Station:
+  Name: ${STATION_EXP.name}
+  Typ: ${STATION_EXP.type}
+  Modus: ${STATION_EXP.mode}
+  Zustand: ${STATION_EXP.state}
+  Real: ${STATION_EXP.real}
 
-    document.getElementById("system-status").innerText =
-        `Zeit: ${tem.timestamp}\nKernel: ${run8.run}\nSystem: OK`;
+Pipeline:
+  3: ${PIPELINE_EXP[3]}
+  6: ${PIPELINE_EXP[6]}
+  ∞: ${PIPELINE_EXP.infinity}
 
-})();
+EXP‑Vector:
+  ID: ${exp.id}
+  EVO: ${exp.evo}°
+  GEO: ${exp.geo}
+  Radar: ${exp.radar}
+  Status: ${exp.status}
+            </pre>
+        </div>
+    `;
+
+    document.getElementById("output").innerHTML = html;
+}
+
+run();
+
 </script>
 
 </body>
